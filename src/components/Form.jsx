@@ -5,6 +5,8 @@ import styles from './Form.module.css'
 import Button from './Button'
 import BackButton from './BackButton'
 import { useUrlPosition } from '../hooks/useUrlPosition'
+import Message from './Message'
+import Spinner from './Spinner'
 
 export function convertToEmoji(countryCode) {
 	const codePoints = countryCode
@@ -23,18 +25,33 @@ function Form() {
 	const [country, setCountry] = useState('')
 	const [date, setDate] = useState(new Date())
 	const [notes, setNotes] = useState('')
+	const [emoji, setEmoji] = useState('')
+	const [geoError, setGeoError] = useState('')
+
+	const flagemojiToPNG = flag => {
+		const countryCode = Array.from(flag, codeUnit => codeUnit.codePointAt())
+			.map(char => String.fromCharCode(char - 127397).toLowerCase())
+			.join('')
+		return <img src={`https://flagcdn.com/24x18/${countryCode}.png`} alt="flag" />
+	}
 
 	useEffect(
 		function () {
 			async function fetchCityData() {
 				try {
 					setIsLoadingGeocoding(true)
+					setGeoError('')
 					const res = await fetch(`${BASE_URL}?latitude=${lat}&longitude=${lng}`)
 					const data = await res.json()
+
+					if (!data.countryCode) throw new Error("That doesn't seem to be a city. Click somewhere else 😊")
+
 					setCityName(data.city || data.locality || '')
 					setCountry(data.countryName)
+					setEmoji(convertToEmoji(data.countryCode))
 					console.log(data)
 				} catch (err) {
+					setGeoError(err.message)
 				} finally {
 					setIsLoadingGeocoding(false)
 				}
@@ -44,12 +61,16 @@ function Form() {
 		[lat, lng]
 	)
 
+	if (isLoadingGeocoding) return <Spinner />
+
+	if (geoError) return <Message message={geoError} />
+
 	return (
 		<form className={styles.form}>
 			<div className={styles.row}>
 				<label htmlFor="cityName">City name</label>
 				<input id="cityName" onChange={e => setCityName(e.target.value)} value={cityName} />
-				{/* <span className={styles.flag}>{emoji}</span> */}
+				<span className={styles.flag}>{emoji && flagemojiToPNG(emoji)}</span>
 			</div>
 
 			<div className={styles.row}>
