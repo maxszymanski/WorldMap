@@ -12,12 +12,18 @@ const formatDate = date =>
 function CityItem({ city }) {
 	const { currentCity } = useCities()
 	const { cityName, date, emoji, id, position } = city
+	const { deleteCity } = useCities()
 
 	const flagemojiToPNG = flag => {
 		let countryCode = Array.from(flag, codeUnit => codeUnit.codePointAt())
 			.map(char => String.fromCharCode(char - 127397).toLowerCase())
 			.join('')
 		return <img src={`https://flagcdn.com/24x18/${countryCode}.png`} alt="flag" />
+	}
+
+	function handleClick(e) {
+		e.preventDefault()
+		deleteCity(id)
 	}
 
 	return (
@@ -28,7 +34,9 @@ function CityItem({ city }) {
 				<span className={styles.emoji}>{flagemojiToPNG(emoji)}</span>
 				<h3 className={styles.name}>{cityName}</h3>
 				<time className={styles.dates}>{formatDate(date)}</time>
-				<button className={styles.deleteBtn}>&times;</button>
+				<button className={styles.deleteBtn} onClick={handleClick}>
+					&times;
+				</button>
 			</Link>
 		</li>
 	)
