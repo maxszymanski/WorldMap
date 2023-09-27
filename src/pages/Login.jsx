@@ -11,15 +11,14 @@ export default function Login() {
 	const [email, setEmail] = useState('jack@example.com')
 	const [password, setPassword] = useState('qwerty')
 	const navigate = useNavigate()
-	console.log(isAuthenticated)
 
 	function handleLog(e) {
 		e.preventDefault()
-		login(email, password)
+		if (email && password) login(email, password)
 	}
 	useEffect(
 		function () {
-			isAuthenticated && navigate('/app')
+			isAuthenticated && navigate('/app', { replace: true })
 		},
 		[isAuthenticated, navigate]
 	)
